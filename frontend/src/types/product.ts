@@ -1,0 +1,68 @@
+export type ProductStatus = 'AVAILABLE' | 'SOLD' | 'HIDDEN'
+
+export interface PublicCategory {
+  id: number
+  name: string
+  slug: string
+}
+
+export interface AdminCategory {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProductMedia {
+  id: number
+  mediaUrl: string
+  mediaType: 'IMAGE' | 'VIDEO'
+  primary: boolean
+  displayOrder: number
+}
+
+export interface AdminProductMedia extends ProductMedia {
+  cloudinaryPublicId: string
+}
+
+/**
+ * Public product — price fields intentionally absent.
+ * Never add priceFrom / priceTo here.
+ */
+export interface PublicProduct {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  featherColor: string | null
+  weightGrams: number | null
+  ageMonths: number | null
+  status: ProductStatus
+  category: PublicCategory
+  primaryMediaUrl: string | null
+  media: ProductMedia[] | null
+}
+
+/**
+ * Admin product — includes price fields.
+ * MUST NOT be used in any public-facing component.
+ */
+export interface AdminProduct {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  priceFrom: number | null   // ADMIN ONLY
+  priceTo: number | null     // ADMIN ONLY
+  featherColor: string | null
+  weightGrams: number | null
+  ageMonths: number | null
+  status: ProductStatus
+  category: PublicCategory
+  primaryMediaUrl: string | null
+  media: AdminProductMedia[] | null
+  createdAt: string
+  updatedAt: string
+}

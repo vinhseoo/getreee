@@ -1,0 +1,29 @@
+# ──────────────────────────────────────────────
+# Backend (Maven / Spring Boot)
+# ──────────────────────────────────────────────
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.env
+backend/.env.local
+backend/.idea/
+backend/*.iml
+
+# ──────────────────────────────────────────────
+# Frontend (Next.js / Node)
+# ──────────────────────────────────────────────
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/.env*.local
+
+# ──────────────────────────────────────────────
+# OS / Editor
+# ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
