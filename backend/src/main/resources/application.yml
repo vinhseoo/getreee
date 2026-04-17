@@ -3,9 +3,9 @@ spring:
     name: gatre-backend
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://ep-rapid-mode-a1xpf3g5-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_9ZjlMK2UiYhg
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -28,8 +28,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-id: ${GOOGLE_CLIENT_ID:632957935940-e6rj2rjq59e2ale81kpa1k88cldogt9q.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
             scope: email, profile
 
   data:
@@ -43,14 +43,14 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:aa408d0f380246fdd6f12e86ff7586be86fb81f61830caae7a930f47f26eeb0c}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
   cloudinary:
-    cloud-name: ${CLOUDINARY_CLOUD_NAME}
-    api-key: ${CLOUDINARY_API_KEY}
-    api-secret: ${CLOUDINARY_API_SECRET}
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:dgklwx7ch}
+    api-key: ${CLOUDINARY_API_KEY:587385195839761}
+    api-secret: ${CLOUDINARY_API_SECRET:FFS2iTJqQyVVl6lC0i7e7IJmFWo}
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

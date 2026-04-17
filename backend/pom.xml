@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.9</version>
         <relativePath/>
     </parent>
 
@@ -22,6 +22,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jjwt.version>0.12.5</jjwt.version>
         <cloudinary.version>1.38.0</cloudinary.version>
+        <spring-dotenv.version>4.0.0</spring-dotenv.version>
     </properties>
 
     <dependencies>
@@ -114,6 +115,13 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Dotenv — loads backend/.env into Spring Environment automatically -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>${spring-dotenv.version}</version>
         </dependency>
 
         <!-- Test -->
