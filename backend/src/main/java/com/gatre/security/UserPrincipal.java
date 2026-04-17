@@ -6,6 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,9 @@ import java.util.Map;
 /**
  * Unified principal that satisfies both the JWT filter (UserDetails)
  * and the OAuth2 success handler (OAuth2User).
+ * Also implements java.security.Principal so it can be set on WebSocket sessions.
  */
-public class UserPrincipal implements UserDetails, OAuth2User {
+public class UserPrincipal implements UserDetails, OAuth2User, Principal {
 
     private final Long id;
     private final String email;

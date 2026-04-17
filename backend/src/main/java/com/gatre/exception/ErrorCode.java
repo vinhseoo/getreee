@@ -31,6 +31,9 @@ public enum ErrorCode {
     MEDIA_NOT_FOUND(HttpStatus.NOT_FOUND,         "Không tìm thấy file media."),
     MEDIA_UPLOAD_FAILED(HttpStatus.BAD_GATEWAY,   "Tải ảnh/video thất bại. Vui lòng thử lại."),
 
+    // Chat
+    CONVERSATION_NOT_FOUND(HttpStatus.NOT_FOUND,  "Không tìm thấy cuộc trò chuyện."),
+
     // General
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
 

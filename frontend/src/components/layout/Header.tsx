@@ -31,6 +31,12 @@ export function Header() {
 
           {user ? (
             <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard/chat"
+                className="text-sm text-text-secondary hover:text-primary transition-colors"
+              >
+                Nhắn tin
+              </Link>
               {user.avatarUrl && (
                 <Image
                   src={user.avatarUrl}

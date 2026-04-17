@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { href: '/admin/san-pham', label: 'Sản phẩm' },
   { href: '/admin/danh-muc', label: 'Danh mục' },
+  { href: '/admin/chat', label: 'Trò chuyện' },
 ]
 
 export function AdminSidebar() {
