@@ -1,10 +1,14 @@
 package com.gatre.controller;
 
+import com.gatre.dto.request.LoginRequest;
 import com.gatre.dto.response.ApiResponse;
 import com.gatre.dto.response.AuthResponseDTO;
 import com.gatre.dto.response.UserProfileDTO;
+import com.gatre.entity.User;
+import com.gatre.entity.enums.AuthProvider;
 import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
+import com.gatre.repository.UserRepository;
 import com.gatre.security.CustomUserDetailsService;
 import com.gatre.security.JwtProvider;
 import com.gatre.security.UserPrincipal;
@@ -15,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -27,6 +32,53 @@ public class AuthController {
     private final UserService               userService;
     private final JwtProvider               jwtProvider;
     private final CustomUserDetailsService  userDetailsService;
+    private final UserRepository            userRepository;
+    private final PasswordEncoder           passwordEncoder;
+
+    /**
+     * Email + password login for LOCAL provider accounts.
+     * Returns access token in body; refresh token is set as HttpOnly cookie.
+     */
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> login(
+            @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
+        if (request.email() == null || request.password() == null) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        User user = userRepository.findByEmail(request.email().trim().toLowerCase())
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+
+        if (user.getProvider() != AuthProvider.LOCAL) {
+            throw new AppException(ErrorCode.LOGIN_NOT_SUPPORTED);
+        }
+
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        if (!user.isActive()) {
+            throw new AppException(ErrorCode.USER_INACTIVE);
+        }
+
+        String role         = user.getRole().name();
+        String accessToken  = jwtProvider.generateAccessToken(user.getId(), user.getEmail(), role);
+        String refreshToken = jwtProvider.generateRefreshToken(user.getId(), user.getEmail(), role);
+
+        Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(false);   // TODO: true in production (HTTPS)
+        refreshCookie.setPath("/api/auth/refresh");
+        refreshCookie.setMaxAge((int) (jwtProvider.getRefreshTokenExpirationMs() / 1000));
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(ApiResponse.ok(
+                new AuthResponseDTO(accessToken, jwtProvider.getAccessTokenExpirationMs() / 1000)
+        ));
+    }
 
     /**
      * Returns the authenticated user's profile.

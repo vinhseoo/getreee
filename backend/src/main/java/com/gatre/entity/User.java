@@ -18,6 +18,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class User {
 
@@ -46,6 +47,10 @@ public class User {
 
     @Column(name = "provider_id")
     private String providerId;
+
+    /** BCrypt-hashed password. NULL for GOOGLE-authenticated accounts. */
+    @Column(name = "password_hash")
+    private String passwordHash;
 
     @Column(name = "is_active", nullable = false)
     private boolean active;

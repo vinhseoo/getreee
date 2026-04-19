@@ -18,6 +18,8 @@ public enum ErrorCode {
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,          "Không tìm thấy người dùng."),
     USER_INACTIVE(HttpStatus.FORBIDDEN,           "Tài khoản của bạn đã bị vô hiệu hóa."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED,  "Email hoặc mật khẩu không chính xác."),
+    LOGIN_NOT_SUPPORTED(HttpStatus.BAD_REQUEST,   "Tài khoản này đăng nhập qua Google. Vui lòng dùng nút 'Đăng nhập với Google'."),
 
     // Category
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND,      "Không tìm thấy danh mục."),

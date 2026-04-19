@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
 import { AuthInitializer } from '@/components/layout/AuthInitializer'
-
-const inter = Inter({ subsets: ['latin', 'vietnamese'] })
+import { ToastContainer } from '@/components/ui/Toast'
 
 export const metadata: Metadata = {
   title: { default: 'Gà Tre Catalog', template: '%s | Gà Tre Catalog' },
@@ -13,8 +11,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
-      <body className={`${inter.className} bg-surface-muted text-text-primary antialiased`}>
+      <body className={`font-sans bg-surface-muted text-text-primary antialiased`}>
         <AuthInitializer />
+        <ToastContainer />
         {children}
       </body>
     </html>

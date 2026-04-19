@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ProductService {
 
     // Public
-    PageResponse<PublicProductDTO> findPublicProducts(Long categoryId, String featherColor, Pageable pageable);
+    PageResponse<PublicProductDTO> findPublicProducts(Long categoryId, String featherColor, String keyword, Pageable pageable);
     PublicProductDTO findBySlugPublic(String slug);
 
     // Admin — product CRUD

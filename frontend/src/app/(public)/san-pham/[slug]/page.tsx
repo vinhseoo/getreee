@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { PublicProduct } from '@/types/product'
+import { ProductImageGallery } from '@/components/product/ProductImageGallery'
+import { ProductCTA } from '@/components/product/ProductCTA'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -47,51 +48,25 @@ export default async function ProductDetailPage({ params }: Props) {
       <nav className="flex items-center gap-2 text-sm text-text-muted">
         <Link href="/" className="hover:text-primary">Trang chủ</Link>
         <span>›</span>
+        {product.category && (
+          <>
+            <Link href={`/?categoryId=${product.category.id}`} className="hover:text-primary">
+              {product.category.name}
+            </Link>
+            <span>›</span>
+          </>
+        )}
         <span className="text-text-secondary">{product.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        {/* Media */}
-        <div className="space-y-3">
-          {product.primaryMediaUrl ? (
-            <div className="overflow-hidden rounded-card">
-              <Image
-                src={product.primaryMediaUrl}
-                alt={product.name}
-                width={600}
-                height={600}
-                className="aspect-square w-full object-cover"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="flex aspect-square items-center justify-center rounded-card bg-surface-muted text-text-muted">
-              Chưa có ảnh
-            </div>
-          )}
-
-          {/* Thumbnail strip */}
-          {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {images.map(m => (
-                <Image
-                  key={m.id}
-                  src={m.mediaUrl}
-                  alt=""
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 shrink-0 rounded object-cover"
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Videos */}
-          {videos.map(m => (
-            <video key={m.id} src={m.mediaUrl} controls
-              className="w-full rounded-card" />
-          ))}
-        </div>
+        {/* Interactive media gallery */}
+        <ProductImageGallery
+          primaryUrl={product.primaryMediaUrl}
+          images={images}
+          videos={videos}
+          productName={product.name}
+        />
 
         {/* Info */}
         <div className="space-y-5">
@@ -129,21 +104,8 @@ export default async function ProductDetailPage({ params }: Props) {
             </p>
           )}
 
-          {/* Price intentionally hidden — negotiation via chat (Phase 4) */}
-          <div className="rounded-card border border-primary/30 bg-primary/5 px-5 py-4">
-            <p className="text-sm font-medium text-primary">Giá thương lượng</p>
-            <p className="mt-1 text-xs text-text-muted">
-              Giá không được hiển thị công khai. Vui lòng liên hệ để thương lượng trực tiếp.
-            </p>
-            {/* Chat button will be wired up in Phase 4 */}
-            <button
-              disabled
-              className="btn-primary mt-3 w-full opacity-60 cursor-not-allowed"
-              title="Tính năng nhắn tin sẽ ra mắt sớm"
-            >
-              Liên hệ thương lượng giá →
-            </button>
-          </div>
+          {/* Chat CTA — wired to /dashboard/chat with productId */}
+          <ProductCTA productId={product.id} productName={product.name} slug={product.slug} />
         </div>
       </div>
     </div>

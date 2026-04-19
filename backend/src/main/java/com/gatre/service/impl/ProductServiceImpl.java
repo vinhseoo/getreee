@@ -52,12 +52,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PublicProductDTO> findPublicProducts(
-            Long categoryId, String featherColor, Pageable pageable) {
+            Long categoryId, String featherColor, String keyword, Pageable pageable) {
 
         Specification<Product> spec = Specification
                 .where(ProductSpecification.hasStatus(ProductStatus.AVAILABLE))
                 .and(ProductSpecification.hasCategoryId(categoryId))
-                .and(ProductSpecification.hasFeatherColor(featherColor));
+                .and(ProductSpecification.hasFeatherColor(featherColor))
+                .and(ProductSpecification.hasKeyword(keyword));
 
         Page<Product> page = productRepository.findAll(spec, pageable);
         Map<Long, String> primaryUrls = batchFetchPrimaryUrls(
