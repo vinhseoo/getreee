@@ -25,4 +25,5 @@ export interface Conversation {
   userAvatarUrl: string | null
   lastMessageAt: string | null
   unreadCount: number
+  lastMessage: string | null
 }

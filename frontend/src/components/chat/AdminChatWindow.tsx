@@ -14,6 +14,13 @@ import { Spinner } from '@/components/ui/Spinner'
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'http://localhost:8080/ws'
 
+const QUICK_REPLIES = [
+  'Cảm ơn bạn đã quan tâm! Vui lòng cho biết thêm yêu cầu.',
+  'Sản phẩm hiện còn hàng, mời bạn thương lượng giá trực tiếp.',
+  'Xin lỗi, sản phẩm này đã được bán. Mời bạn xem sản phẩm khác.',
+  'Vui lòng để lại số điện thoại để admin liên hệ lại.',
+]
+
 interface Props {
   conversationId: number
   conversationUserId: number
@@ -139,7 +146,20 @@ export function AdminChatWindow({ conversationId, conversationUserId }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-surface-border p-3">
+      <div className="border-t border-surface-border p-3 space-y-2">
+        {/* B3: Quick reply templates */}
+        <div className="flex flex-wrap gap-1.5">
+          {QUICK_REPLIES.map((reply) => (
+            <button
+              key={reply}
+              onClick={() => setInput(reply)}
+              className="rounded-full border border-surface-border bg-surface-muted px-3 py-1 text-xs text-text-secondary transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+            >
+              {reply.length > 30 ? reply.slice(0, 30) + '…' : reply}
+            </button>
+          ))}
+        </div>
+
         <div className="flex gap-2">
           <input
             value={input}

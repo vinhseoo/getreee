@@ -151,6 +151,10 @@ public class ChatServiceImpl implements ChatService {
 
     private ConversationDTO toConversationDTO(Conversation c) {
         long unread = chatMessageRepository.countByConversationIdAndReadFalse(c.getId());
-        return chatMapper.toConversationDTO(c, unread);
+        String lastMsg = chatMessageRepository
+                .findTopByConversationIdOrderByCreatedAtDesc(c.getId())
+                .map(ChatMessage::getContent)
+                .orElse(null);
+        return chatMapper.toConversationDTO(c, unread, lastMsg);
     }
 }

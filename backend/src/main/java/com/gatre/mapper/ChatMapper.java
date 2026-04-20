@@ -29,5 +29,12 @@ public interface ChatMapper {
     @Mapping(target = "userId",       source = "user.id")
     @Mapping(target = "userName",     source = "user.name")
     @Mapping(target = "userAvatarUrl",source = "user.avatarUrl")
-    ConversationDTO toConversationDTO(Conversation conversation, long unreadCount);
+    @Mapping(target = "lastMessage",  ignore = true)
+    ConversationDTO toConversationDTOBase(Conversation conversation, long unreadCount);
+
+    default ConversationDTO toConversationDTO(Conversation conversation, long unreadCount, String lastMessage) {
+        ConversationDTO base = toConversationDTOBase(conversation, unreadCount);
+        return new ConversationDTO(base.id(), base.userId(), base.userName(), base.userAvatarUrl(),
+                base.lastMessageAt(), base.unreadCount(), lastMessage);
+    }
 }

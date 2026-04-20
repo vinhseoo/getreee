@@ -8,5 +8,6 @@ public record ConversationDTO(
         String userName,
         String userAvatarUrl,
         Instant lastMessageAt,
-        long unreadCount
+        long unreadCount,
+        String lastMessage
 ) {}

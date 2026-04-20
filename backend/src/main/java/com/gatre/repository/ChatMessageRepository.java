@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
     Page<ChatMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId, Pageable pageable);
+
+    Optional<ChatMessage> findTopByConversationIdOrderByCreatedAtDesc(Long conversationId);
 
     long countByConversationIdAndReadFalse(Long conversationId);
     long countByReadFalse();
