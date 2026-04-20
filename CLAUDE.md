@@ -68,3 +68,4 @@ npm run lint
 2. **Vietnamese UI:** All user-facing strings are in Vietnamese. No i18n framework.
 3. **Step-by-Step:** Propose design/logic first → wait for approval → then write implementation code.
 4. **Design tokens:** Use Tailwind semantic classes (`text-primary`, `bg-danger`). Never hardcode colors.
+5. **Log every change to `IMPLEMENTATION.md`:** After completing any feature, fix, or non-trivial refactor, append a new section to `IMPLEMENTATION.md` at the repo root. The section must include: feature/fix name, date, files modified/created, what changed and why. This is mandatory — no commit without a corresponding entry.

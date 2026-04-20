@@ -166,6 +166,14 @@ Each phase must be considered "done" only when:
 - Commit messages: `[Phase N] short description` in English.
 - Never commit `.env` files.
 
+### 5.4 Change Log (Mandatory)
+After every completed feature, fix, or non-trivial refactor, append a new section to **`IMPLEMENTATION.md`** at the repo root before committing. Required fields per entry:
+- Feature/fix name and date
+- Files modified or created (with a one-line reason each)
+- What changed and why (behavior before → behavior after)
+
+No commit that modifies business logic, APIs, DB schema, or UI should lack a corresponding `IMPLEMENTATION.md` entry.
+
 ---
 
 ## 6. Environment Variables
