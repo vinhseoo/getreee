@@ -76,6 +76,13 @@ export default async function ProductDetailPage({ params }: Props) {
 
           <h1 className="text-2xl font-bold text-text-primary">{product.name}</h1>
 
+          {/* Identification */}
+          {product.productCode && (
+            <p className="text-xs font-mono text-text-muted">
+              Mã sản phẩm: <span className="font-semibold text-text-primary">{product.productCode}</span>
+            </p>
+          )}
+
           {/* Attributes */}
           <dl className="divide-y divide-surface-border rounded-card border border-surface-border text-sm">
             {product.featherColor && (
@@ -96,6 +103,18 @@ export default async function ProductDetailPage({ params }: Props) {
                 <dd className="font-medium text-text-primary">{product.ageMonths} tháng</dd>
               </div>
             )}
+            {product.vaccinationStatus && (
+              <div className="flex justify-between px-4 py-2">
+                <dt className="text-text-muted">Tiêm phòng</dt>
+                <dd className="font-medium text-text-primary">{product.vaccinationStatus}</dd>
+              </div>
+            )}
+            {product.characterTraits && (
+              <div className="flex justify-between px-4 py-2">
+                <dt className="text-text-muted">Tính cách</dt>
+                <dd className="font-medium text-text-primary">{product.characterTraits}</dd>
+              </div>
+            )}
           </dl>
 
           {product.description && (
@@ -104,8 +123,13 @@ export default async function ProductDetailPage({ params }: Props) {
             </p>
           )}
 
-          {/* Chat CTA — wired to /dashboard/chat with productId */}
-          <ProductCTA productId={product.id} productName={product.name} slug={product.slug} />
+          {/* Chat CTA — passes productCode so chat can auto-fill the inquiry template */}
+          <ProductCTA
+            productId={product.id}
+            productCode={product.productCode}
+            productName={product.name}
+            slug={product.slug}
+          />
         </div>
       </div>
     </div>

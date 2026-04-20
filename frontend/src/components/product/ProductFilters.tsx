@@ -49,12 +49,13 @@ export function ProductFilters({ categories }: { categories: PublicCategory[] })
   const categoryOptions = categories.map(c => ({ value: String(c.id), label: c.name }))
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       <Select
         options={categoryOptions}
         placeholder="Tất cả danh mục"
         value={searchParams.get('categoryId') ?? ''}
         onChange={e => update('categoryId', e.target.value)}
+        className="w-full sm:w-auto"
       />
 
       <Input
@@ -62,7 +63,7 @@ export function ProductFilters({ categories }: { categories: PublicCategory[] })
         placeholder="Tìm theo tên..."
         defaultValue={searchParams.get('keyword') ?? ''}
         onKeyDown={e => e.key === 'Enter' && handleSearch()}
-        className="w-44"
+        className="w-full sm:w-44"
       />
 
       <Input
@@ -70,16 +71,17 @@ export function ProductFilters({ categories }: { categories: PublicCategory[] })
         placeholder="Màu lông..."
         defaultValue={searchParams.get('featherColor') ?? ''}
         onKeyDown={e => e.key === 'Enter' && handleSearch()}
-        className="w-36"
+        className="w-full sm:w-36"
       />
 
-      <Button size="sm" onClick={handleSearch}>Tìm kiếm</Button>
-
-      {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={handleClear}>
-          Xoá bộ lọc
-        </Button>
-      )}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={handleSearch}>Tìm kiếm</Button>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={handleClear}>
+            Xoá bộ lọc
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

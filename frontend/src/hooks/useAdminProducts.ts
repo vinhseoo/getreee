@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
-import { apiFetchAuth } from '@/lib/apiClient'
+import { apiFetchAuth, ApiError } from '@/lib/apiClient'
+import { toast } from '@/store/useToastStore'
 import { AdminProduct, AdminCategory } from '@/types/product'
 import { PageResponse } from '@/types/api'
 
-export function useAdminProducts(page = 0, size = 20) {
+export function useAdminProducts(page = 0, size = 20, keyword = '') {
   const { accessToken } = useAuthStore()
   const [data, setData] = useState<PageResponse<AdminProduct> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -15,9 +16,15 @@ export function useAdminProducts(page = 0, size = 20) {
   const load = useCallback(async () => {
     if (!accessToken) return
     setLoading(true)
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      sort: 'createdAt,desc',
+    })
+    if (keyword.trim()) params.set('keyword', keyword.trim())
     try {
       const res = await apiFetchAuth<PageResponse<AdminProduct>>(
-        `/api/admin/products?page=${page}&size=${size}&sort=createdAt,desc`,
+        `/api/admin/products?${params}`,
         accessToken
       )
       setData(res)
@@ -26,24 +33,34 @@ export function useAdminProducts(page = 0, size = 20) {
     } finally {
       setLoading(false)
     }
-  }, [accessToken, page, size])
+  }, [accessToken, page, size, keyword])
 
   useEffect(() => { load() }, [load])
 
   async function deleteProduct(id: number) {
     if (!accessToken) return
-    await apiFetchAuth(`/api/admin/products/${id}`, accessToken, { method: 'DELETE' })
-    await load()
+    try {
+      await apiFetchAuth(`/api/admin/products/${id}`, accessToken, { method: 'DELETE' })
+      toast.success('Đã xoá sản phẩm.')
+      await load()
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Không thể xoá sản phẩm.')
+    }
   }
 
   async function updateStatus(id: number, status: string) {
     if (!accessToken) return
-    await apiFetchAuth(
-      `/api/admin/products/${id}/status?status=${status}`,
-      accessToken,
-      { method: 'PATCH' }
-    )
-    await load()
+    try {
+      await apiFetchAuth(
+        `/api/admin/products/${id}/status?status=${status}`,
+        accessToken,
+        { method: 'PATCH' }
+      )
+      toast.success('Đã cập nhật trạng thái.')
+      await load()
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Không thể cập nhật trạng thái.')
+    }
   }
 
   return { data, loading, error, refresh: load, deleteProduct, updateStatus }
@@ -57,7 +74,7 @@ export function useAdminCategories() {
     if (!accessToken) return
     apiFetchAuth<AdminCategory[]>('/api/admin/categories', accessToken)
       .then(setCategories)
-      .catch(() => {})
+      .catch(() => toast.error('Không thể tải danh mục.'))
   }, [accessToken])
 
   return { categories }

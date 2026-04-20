@@ -7,6 +7,7 @@ import com.gatre.dto.response.PublicCategoryDTO;
 import com.gatre.entity.Category;
 import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
+import com.gatre.mapper.CategoryMapper;
 import com.gatre.repository.CategoryRepository;
 import com.gatre.service.CategoryService;
 import com.gatre.util.SlugUtils;
@@ -21,12 +22,13 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper      categoryMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<PublicCategoryDTO> findAllPublic() {
         return categoryRepository.findAll().stream()
-                .map(c -> new PublicCategoryDTO(c.getId(), c.getName(), c.getSlug()))
+                .map(categoryMapper::toPublicDTO)
                 .toList();
     }
 
@@ -34,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public List<AdminCategoryDTO> findAllAdmin() {
         return categoryRepository.findAll().stream()
-                .map(this::toAdminDTO)
+                .map(categoryMapper::toAdminDTO)
                 .toList();
     }
 
@@ -50,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .slug(slug)
                 .description(request.description())
                 .build());
-        return toAdminDTO(saved);
+        return categoryMapper.toAdminDTO(saved);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(request.name());
         category.setSlug(slug);
         category.setDescription(request.description());
-        return toAdminDTO(categoryRepository.save(category));
+        return categoryMapper.toAdminDTO(categoryRepository.save(category));
     }
 
     @Override
@@ -83,11 +85,5 @@ public class CategoryServiceImpl implements CategoryService {
     private Category findOrThrow(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
-    private AdminCategoryDTO toAdminDTO(Category c) {
-        return new AdminCategoryDTO(
-                c.getId(), c.getName(), c.getSlug(),
-                c.getDescription(), c.getCreatedAt(), c.getUpdatedAt());
     }
 }

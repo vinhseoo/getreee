@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/useAuthStore'
 import { apiFetchAuth } from '@/lib/apiClient'
+import { toast } from '@/store/useToastStore'
 import { Conversation } from '@/types/chat'
 import { AdminChatWindow } from '@/components/chat/AdminChatWindow'
 import { Spinner } from '@/components/ui/Spinner'
@@ -29,7 +30,7 @@ export default function AdminConversationPage({ params }: Props) {
         const found = data.content.find((c) => c.id === conversationId)
         setConversation(found ?? null)
       })
-      .catch(() => {})
+      .catch(() => toast.error('Không thể tải cuộc trò chuyện. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
   }, [accessToken, conversationId])
 

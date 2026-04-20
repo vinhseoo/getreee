@@ -6,7 +6,8 @@ import SockJS from 'sockjs-client'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useChatStore } from '@/store/useChatStore'
-import { apiFetchAuth } from '@/lib/apiClient'
+import { apiFetchAuth, ApiError } from '@/lib/apiClient'
+import { toast } from '@/store/useToastStore'
 import { ChatMessage } from '@/types/chat'
 import { PageResponse } from '@/types/api'
 import { MessageBubble } from './MessageBubble'
@@ -18,14 +19,23 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'http://localhost:8080/ws'
 interface Props {
   conversationId: number
   initialProductId?: number | null
+  initialProductCode?: string | null
   initialProductName?: string | null
 }
 
-export function ChatWindow({ conversationId, initialProductId, initialProductName }: Props) {
+export function ChatWindow({ conversationId, initialProductId, initialProductCode, initialProductName }: Props) {
   const { user, accessToken } = useAuthStore()
   const { messages, connected, setMessages, appendMessage, setConnected } = useChatStore()
 
-  const [input, setInput] = useState('')
+  // Auto-fill inquiry template when arriving from a product page
+  const autoFillTemplate =
+    initialProductId && initialProductCode && initialProductName
+      ? `Tôi quan tâm đến ${initialProductCode} - ${initialProductName}. Vui lòng tư vấn thêm.`
+      : initialProductId && initialProductName
+      ? `Tôi quan tâm đến ${initialProductName}. Vui lòng tư vấn thêm.`
+      : ''
+
+  const [input, setInput] = useState(autoFillTemplate)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   // Product attached to the next message (from product detail page navigation)
@@ -44,7 +54,7 @@ export function ChatWindow({ conversationId, initialProductId, initialProductNam
       accessToken
     )
       .then((data) => setMessages(data.content))
-      .catch(() => {})
+      .catch(() => toast.error('Không thể tải lịch sử tin nhắn. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
   }, [conversationId, accessToken, setMessages])
 
@@ -83,22 +93,28 @@ export function ChatWindow({ conversationId, initialProductId, initialProductNam
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const text = input.trim()
-    if (!text || !clientRef.current?.connected) return
+    if (!text || sending || !accessToken) return
 
     setSending(true)
-    clientRef.current.publish({
-      destination: '/app/chat.send',
-      body: JSON.stringify({
-        conversationId,
-        content: text,
-        productId: attachedProductId ?? null,
-      }),
-    })
-    setInput('')
-    setAttachedProductId(null)
-    setSending(false)
+    try {
+      const saved = await apiFetchAuth<ChatMessage>(
+        `/api/user/chat/conversation/${conversationId}/messages`,
+        accessToken,
+        {
+          method: 'POST',
+          body: JSON.stringify({ content: text, productId: attachedProductId ?? null }),
+        }
+      )
+      appendMessage(saved)
+      setInput('')
+      setAttachedProductId(null)
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Không thể gửi tin nhắn. Vui lòng thử lại.')
+    } finally {
+      setSending(false)
+    }
   }
 
   if (!user) return null
@@ -160,19 +176,19 @@ export function ChatWindow({ conversationId, initialProductId, initialProductNam
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Nhập tin nhắn..."
             className="flex-1 rounded-btn border border-surface-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary"
-            disabled={!connected}
+            disabled={sending}
           />
           <Button
             size="sm"
             onClick={sendMessage}
-            disabled={!input.trim() || !connected}
+            disabled={!input.trim() || sending}
             loading={sending}
           >
             Gửi
           </Button>
         </div>
         {!connected && (
-          <p className="mt-1 text-xs text-text-muted">Đang kết nối...</p>
+          <p className="mt-1 text-xs text-text-muted">Tin nhắn sẽ được lưu — admin sẽ phản hồi sau.</p>
         )}
       </div>
     </div>

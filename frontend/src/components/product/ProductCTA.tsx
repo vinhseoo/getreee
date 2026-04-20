@@ -6,17 +6,23 @@ import { Button } from '@/components/ui/Button'
 
 interface Props {
   productId: number
+  productCode: string | null
   productName: string
   slug: string
 }
 
-export function ProductCTA({ productId, productName, slug }: Props) {
+export function ProductCTA({ productId, productCode, productName, slug }: Props) {
   const router = useRouter()
   const { user } = useAuthStore()
 
   function handleClick() {
     if (user) {
-      router.push(`/dashboard/chat?productId=${productId}&productName=${encodeURIComponent(productName)}`)
+      const params = new URLSearchParams({
+        productId: String(productId),
+        productName: productName,
+        ...(productCode ? { productCode } : {}),
+      })
+      router.push(`/dashboard/chat?${params.toString()}`)
     } else {
       router.push(`/dang-nhap?redirect=/san-pham/${slug}`)
     }

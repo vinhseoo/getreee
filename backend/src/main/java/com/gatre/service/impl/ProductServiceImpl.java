@@ -5,8 +5,6 @@ import com.gatre.dto.admin.AdminProductMediaDTO;
 import com.gatre.dto.request.ProductCreateRequest;
 import com.gatre.dto.request.ProductUpdateRequest;
 import com.gatre.dto.response.PageResponse;
-import com.gatre.dto.response.ProductMediaDTO;
-import com.gatre.dto.response.PublicCategoryDTO;
 import com.gatre.dto.response.PublicProductDTO;
 import com.gatre.entity.Category;
 import com.gatre.entity.Product;
@@ -16,6 +14,7 @@ import com.gatre.entity.enums.MediaType;
 import com.gatre.entity.enums.ProductStatus;
 import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
+import com.gatre.mapper.ProductMapper;
 import com.gatre.repository.CategoryRepository;
 import com.gatre.repository.ProductMediaRepository;
 import com.gatre.repository.ProductRepository;
@@ -46,6 +45,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository     categoryRepository;
     private final UserRepository         userRepository;
     private final CloudinaryService      cloudinaryService;
+    private final ProductMapper          productMapper;
 
     // ── Public ───────────────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
                 page.getContent().stream().map(Product::getId).toList());
 
         return PageResponse.from(page.map(p ->
-                toPublicListDTO(p, primaryUrls.get(p.getId()))));
+                productMapper.toPublicListDTO(p, primaryUrls.get(p.getId()))));
     }
 
     @Override
@@ -78,19 +78,22 @@ public class ProductServiceImpl implements ProductService {
         List<ProductMedia> media = productMediaRepository
                 .findByProductIdOrderByDisplayOrderAsc(product.getId());
 
-        return toPublicDetailDTO(product, media);
+        return productMapper.toPublicDetailDTO(product,
+                getPrimaryUrl(media),
+                media.stream().map(productMapper::toPublicMediaDTO).toList());
     }
 
     // ── Admin — Products ─────────────────────────────────────────────────────
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<AdminProductDTO> findAllAdmin(Pageable pageable) {
-        Page<Product> page = productRepository.findAll(pageable);
+    public PageResponse<AdminProductDTO> findAllAdmin(String keyword, Pageable pageable) {
+        Specification<Product> spec = ProductSpecification.hasKeyword(keyword);
+        Page<Product> page = productRepository.findAll(spec, pageable);
         Map<Long, String> primaryUrls = batchFetchPrimaryUrls(
                 page.getContent().stream().map(Product::getId).toList());
         return PageResponse.from(page.map(p ->
-                toAdminListDTO(p, primaryUrls.get(p.getId()))));
+                productMapper.toAdminListDTO(p, primaryUrls.get(p.getId()))));
     }
 
     @Override
@@ -116,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
         Product saved = productRepository.save(Product.builder()
                 .name(req.name())
                 .slug(slug)
+                .productCode(req.productCode())
                 .description(req.description())
                 .category(category)
                 .createdBy(creator)
@@ -124,10 +128,12 @@ public class ProductServiceImpl implements ProductService {
                 .featherColor(req.featherColor())
                 .weightGrams(req.weightGrams())
                 .ageMonths(req.ageMonths())
+                .vaccinationStatus(req.vaccinationStatus())
+                .characterTraits(req.characterTraits())
                 .status(req.status() != null ? req.status() : ProductStatus.AVAILABLE)
                 .build());
 
-        return toAdminDetailDTO(saved, List.of());
+        return productMapper.toAdminDetailDTO(saved, null, List.of());
     }
 
     @Override
@@ -143,14 +149,17 @@ public class ProductServiceImpl implements ProductService {
             }
             product.setSlug(slug);
         }
-        if (req.description()  != null) product.setDescription(req.description());
-        if (req.categoryId()   != null) product.setCategory(findCategoryOrThrow(req.categoryId()));
-        if (req.priceFrom()    != null) product.setPriceFrom(req.priceFrom());
-        if (req.priceTo()      != null) product.setPriceTo(req.priceTo());
-        if (req.featherColor() != null) product.setFeatherColor(req.featherColor());
-        if (req.weightGrams()  != null) product.setWeightGrams(req.weightGrams());
-        if (req.ageMonths()    != null) product.setAgeMonths(req.ageMonths());
-        if (req.status()       != null) product.setStatus(req.status());
+        if (req.productCode()        != null) product.setProductCode(req.productCode());
+        if (req.description()        != null) product.setDescription(req.description());
+        if (req.categoryId()         != null) product.setCategory(findCategoryOrThrow(req.categoryId()));
+        if (req.priceFrom()          != null) product.setPriceFrom(req.priceFrom());
+        if (req.priceTo()            != null) product.setPriceTo(req.priceTo());
+        if (req.featherColor()       != null) product.setFeatherColor(req.featherColor());
+        if (req.weightGrams()        != null) product.setWeightGrams(req.weightGrams());
+        if (req.ageMonths()          != null) product.setAgeMonths(req.ageMonths());
+        if (req.vaccinationStatus()  != null) product.setVaccinationStatus(req.vaccinationStatus());
+        if (req.characterTraits()    != null) product.setCharacterTraits(req.characterTraits());
+        if (req.status()             != null) product.setStatus(req.status());
 
         List<ProductMedia> media = productMediaRepository
                 .findByProductIdOrderByDisplayOrderAsc(id);
@@ -171,10 +180,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void delete(Long id) {
         Product product = findProductOrThrow(id);
-        // Delete each media file from Cloudinary before removing DB records
         productMediaRepository.findByProductIdOrderByDisplayOrderAsc(id)
                 .forEach(m -> cloudinaryService.delete(m.getCloudinaryPublicId()));
-        productRepository.delete(product);  // DB cascade removes product_media rows
+        productRepository.delete(product);
     }
 
     // ── Admin — Media ────────────────────────────────────────────────────────
@@ -186,7 +194,6 @@ public class ProductServiceImpl implements ProductService {
         CloudinaryService.UploadResult result =
                 cloudinaryService.upload(file, "gatre/products/" + productId);
 
-        // Determine media type from content type
         String contentType = file.getContentType() != null ? file.getContentType() : "";
         MediaType mediaType = contentType.startsWith("video") ? MediaType.VIDEO : MediaType.IMAGE;
 
@@ -197,12 +204,12 @@ public class ProductServiceImpl implements ProductService {
                 .product(product)
                 .mediaUrl(result.url())
                 .mediaType(mediaType)
-                .primary(isFirstMedia)     // first upload is auto-set as primary
+                .primary(isFirstMedia)
                 .cloudinaryPublicId(result.publicId())
                 .displayOrder(nextOrder)
                 .build());
 
-        return toAdminMediaDTO(media);
+        return productMapper.toAdminMediaDTO(media);
     }
 
     @Override
@@ -229,7 +236,6 @@ public class ProductServiceImpl implements ProductService {
         cloudinaryService.delete(media.getCloudinaryPublicId());
         productMediaRepository.delete(media);
 
-        // If deleted media was primary, promote the next one
         if (media.isPrimary()) {
             productMediaRepository
                     .findByProductIdOrderByDisplayOrderAsc(productId)
@@ -241,71 +247,20 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    // ── Mapping helpers ──────────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** List-view: no full media list, just primary URL. Price-stripped. */
-    private PublicProductDTO toPublicListDTO(Product p, String primaryUrl) {
-        return new PublicProductDTO(
-                p.getId(), p.getName(), p.getSlug(), p.getDescription(),
-                p.getFeatherColor(), p.getWeightGrams(), p.getAgeMonths(),
-                p.getStatus().name(), toCategoryDTO(p.getCategory()),
-                primaryUrl, null);
+    private AdminProductDTO toAdminDetailDTO(Product product, List<ProductMedia> media) {
+        List<AdminProductMediaDTO> mediaDTOs = media.stream()
+                .map(productMapper::toAdminMediaDTO)
+                .toList();
+        return productMapper.toAdminDetailDTO(product, getPrimaryUrl(media), mediaDTOs);
     }
 
-    /** Detail-view: full media list included. Price-stripped. */
-    private PublicProductDTO toPublicDetailDTO(Product p, List<ProductMedia> media) {
-        String primaryUrl = media.stream().filter(ProductMedia::isPrimary)
+    private String getPrimaryUrl(List<ProductMedia> media) {
+        return media.stream().filter(ProductMedia::isPrimary)
                 .map(ProductMedia::getMediaUrl).findFirst().orElse(null);
-        return new PublicProductDTO(
-                p.getId(), p.getName(), p.getSlug(), p.getDescription(),
-                p.getFeatherColor(), p.getWeightGrams(), p.getAgeMonths(),
-                p.getStatus().name(), toCategoryDTO(p.getCategory()),
-                primaryUrl,
-                media.stream().map(this::toPublicMediaDTO).toList());
     }
 
-    /** Admin list-view: includes prices, no full media list. */
-    private AdminProductDTO toAdminListDTO(Product p, String primaryUrl) {
-        return new AdminProductDTO(
-                p.getId(), p.getName(), p.getSlug(), p.getDescription(),
-                p.getPriceFrom(), p.getPriceTo(),
-                p.getFeatherColor(), p.getWeightGrams(), p.getAgeMonths(),
-                p.getStatus().name(), toCategoryDTO(p.getCategory()),
-                primaryUrl, null,
-                p.getCreatedAt(), p.getUpdatedAt());
-    }
-
-    /** Admin detail-view: includes prices + full media list. */
-    private AdminProductDTO toAdminDetailDTO(Product p, List<ProductMedia> media) {
-        String primaryUrl = media.stream().filter(ProductMedia::isPrimary)
-                .map(ProductMedia::getMediaUrl).findFirst().orElse(null);
-        return new AdminProductDTO(
-                p.getId(), p.getName(), p.getSlug(), p.getDescription(),
-                p.getPriceFrom(), p.getPriceTo(),
-                p.getFeatherColor(), p.getWeightGrams(), p.getAgeMonths(),
-                p.getStatus().name(), toCategoryDTO(p.getCategory()),
-                primaryUrl,
-                media.stream().map(this::toAdminMediaDTO).toList(),
-                p.getCreatedAt(), p.getUpdatedAt());
-    }
-
-    private PublicCategoryDTO toCategoryDTO(Category c) {
-        if (c == null) return null;
-        return new PublicCategoryDTO(c.getId(), c.getName(), c.getSlug());
-    }
-
-    private ProductMediaDTO toPublicMediaDTO(ProductMedia m) {
-        return new ProductMediaDTO(m.getId(), m.getMediaUrl(),
-                m.getMediaType().name(), m.isPrimary(), m.getDisplayOrder());
-    }
-
-    private AdminProductMediaDTO toAdminMediaDTO(ProductMedia m) {
-        return new AdminProductMediaDTO(m.getId(), m.getMediaUrl(),
-                m.getMediaType().name(), m.isPrimary(),
-                m.getCloudinaryPublicId(), m.getDisplayOrder());
-    }
-
-    /** Single batch query to get primary media URLs for a page of products. */
     private Map<Long, String> batchFetchPrimaryUrls(List<Long> productIds) {
         if (productIds.isEmpty()) return Map.of();
         return productMediaRepository.findPrimaryMediaByProductIds(productIds)

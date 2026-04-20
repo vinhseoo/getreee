@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/Spinner'
 function ChatContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId') ? Number(searchParams.get('productId')) : null
+  const productCode = searchParams.get('productCode') ?? null
   const productName = searchParams.get('productName') ?? null
 
   const { accessToken } = useAuthStore()
@@ -45,6 +46,7 @@ function ChatContent() {
           <ChatWindow
             conversationId={conversation.id}
             initialProductId={productId}
+            initialProductCode={productCode}
             initialProductName={productName}
           />
         </div>

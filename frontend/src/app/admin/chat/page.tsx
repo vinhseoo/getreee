@@ -4,15 +4,22 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useNotificationStore } from '@/store/useNotificationStore'
 import { apiFetchAuth } from '@/lib/apiClient'
+import { toast } from '@/store/useToastStore'
 import { Conversation } from '@/types/chat'
 import { PageResponse } from '@/types/api'
 import { Spinner } from '@/components/ui/Spinner'
 
 export default function AdminChatInboxPage() {
   const { accessToken } = useAuthStore()
+  const reset = useNotificationStore((s) => s.reset)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    reset()
+  }, [reset])
 
   useEffect(() => {
     if (!accessToken) return
@@ -21,7 +28,7 @@ export default function AdminChatInboxPage() {
       accessToken
     )
       .then((data) => setConversations(data.content))
-      .catch(() => {})
+      .catch(() => toast.error('Không thể tải danh sách hội thoại. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
   }, [accessToken])
 

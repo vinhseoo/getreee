@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 public record ProductUpdateRequest(
         String name,
         String slug,
+        String productCode,
         String description,
         Long categoryId,
         BigDecimal priceFrom,
@@ -15,5 +16,7 @@ public record ProductUpdateRequest(
         String featherColor,
         Integer weightGrams,
         Integer ageMonths,
+        String vaccinationStatus,
+        String characterTraits,
         ProductStatus status
 ) {}

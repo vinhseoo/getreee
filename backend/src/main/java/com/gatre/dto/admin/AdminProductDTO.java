@@ -12,6 +12,7 @@ import java.util.List;
  */
 public record AdminProductDTO(
         Long id,
+        String productCode,
         String name,
         String slug,
         String description,
@@ -20,6 +21,8 @@ public record AdminProductDTO(
         String featherColor,
         Integer weightGrams,
         Integer ageMonths,
+        String vaccinationStatus,
+        String characterTraits,
         String status,
         PublicCategoryDTO category,
         String primaryMediaUrl,

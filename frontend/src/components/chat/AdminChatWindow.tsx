@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { useAuthStore } from '@/store/useAuthStore'
-import { apiFetchAuth } from '@/lib/apiClient'
+import { apiFetchAuth, ApiError } from '@/lib/apiClient'
+import { toast } from '@/store/useToastStore'
 import { ChatMessage } from '@/types/chat'
 import { PageResponse } from '@/types/api'
 import { MessageBubble } from './MessageBubble'
@@ -24,6 +25,7 @@ export function AdminChatWindow({ conversationId, conversationUserId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
   const [connected, setConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const clientRef = useRef<Client | null>(null)
@@ -44,7 +46,7 @@ export function AdminChatWindow({ conversationId, conversationUserId }: Props) {
       ),
     ])
       .then(([data]) => setMessages(data.content))
-      .catch(() => {})
+      .catch(() => toast.error('Không thể tải tin nhắn. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
   }, [conversationId, accessToken])
 
@@ -85,15 +87,29 @@ export function AdminChatWindow({ conversationId, conversationUserId }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const text = input.trim()
-    if (!text || !clientRef.current?.connected) return
+    if (!text || sending || !accessToken) return
 
-    clientRef.current.publish({
-      destination: '/app/chat.send',
-      body: JSON.stringify({ conversationId, content: text, productId: null }),
-    })
-    setInput('')
+    setSending(true)
+    try {
+      const saved = await apiFetchAuth<ChatMessage>(
+        `/api/admin/chat/conversations/${conversationId}/messages`,
+        accessToken,
+        {
+          method: 'POST',
+          body: JSON.stringify({ content: text, productId: null }),
+        }
+      )
+      setMessages((prev) =>
+        prev.some((m) => m.id === saved.id) ? prev : [...prev, saved]
+      )
+      setInput('')
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Không thể gửi tin nhắn. Vui lòng thử lại.')
+    } finally {
+      setSending(false)
+    }
   }
 
   if (!user) return null
@@ -131,9 +147,9 @@ export function AdminChatWindow({ conversationId, conversationUserId }: Props) {
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Trả lời khách hàng..."
             className="flex-1 rounded-btn border border-surface-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary"
-            disabled={!connected}
+            disabled={sending}
           />
-          <Button size="sm" onClick={sendMessage} disabled={!input.trim() || !connected}>
+          <Button size="sm" onClick={sendMessage} disabled={!input.trim() || sending} loading={sending}>
             Gửi
           </Button>
         </div>

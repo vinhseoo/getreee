@@ -4,6 +4,7 @@ export interface PublicCategory {
   id: number
   name: string
   slug: string
+  description: string | null
 }
 
 export interface AdminCategory {
@@ -33,12 +34,15 @@ export interface AdminProductMedia extends ProductMedia {
  */
 export interface PublicProduct {
   id: number
+  productCode: string | null
   name: string
   slug: string
   description: string | null
   featherColor: string | null
   weightGrams: number | null
   ageMonths: number | null
+  vaccinationStatus: string | null
+  characterTraits: string | null
   status: ProductStatus
   category: PublicCategory
   primaryMediaUrl: string | null
@@ -51,6 +55,7 @@ export interface PublicProduct {
  */
 export interface AdminProduct {
   id: number
+  productCode: string | null
   name: string
   slug: string
   description: string | null
@@ -59,6 +64,8 @@ export interface AdminProduct {
   featherColor: string | null
   weightGrams: number | null
   ageMonths: number | null
+  vaccinationStatus: string | null
+  characterTraits: string | null
   status: ProductStatus
   category: PublicCategory
   primaryMediaUrl: string | null

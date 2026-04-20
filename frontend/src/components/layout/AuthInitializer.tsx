@@ -5,15 +5,29 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/useAuthStore'
 
 /**
- * Rendered in the root layout. On every page load it attempts a silent token
- * refresh via the HttpOnly refresh cookie. If the cookie is missing or expired
- * the call fails silently and the store remains empty (user is logged out).
- * Sets `initialized: true` when done so auth-guarded layouts know it's safe to check.
+ * Rendered in the root layout. Attempts a silent token refresh on every page
+ * load via the HttpOnly refresh cookie, then schedules the next refresh 60 s
+ * before expiry so the session stays alive as long as the tab is open.
  */
 export function AuthInitializer() {
   const { refresh } = useAuth()
   const setInitialized = useAuthStore(s => s.setInitialized)
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { refresh().finally(setInitialized) }, [])
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+
+    async function doRefresh() {
+      const result = await refresh()
+      if (result) {
+        const delayMs = Math.max((result.expiresIn - 60) * 1000, 30_000)
+        timer = setTimeout(doRefresh, delayMs)
+      }
+    }
+
+    doRefresh().finally(setInitialized)
+    return () => clearTimeout(timer)
+  }, [])
+
   return null
 }

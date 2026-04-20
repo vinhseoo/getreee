@@ -18,7 +18,7 @@ public interface ProductService {
     PublicProductDTO findBySlugPublic(String slug);
 
     // Admin — product CRUD
-    PageResponse<AdminProductDTO> findAllAdmin(Pageable pageable);
+    PageResponse<AdminProductDTO> findAllAdmin(String keyword, Pageable pageable);
     AdminProductDTO findByIdAdmin(Long id);
     AdminProductDTO create(ProductCreateRequest request, UserPrincipal principal);
     AdminProductDTO update(Long id, ProductUpdateRequest request);

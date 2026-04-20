@@ -29,16 +29,19 @@ export function ProductForm({ product, categories }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    name:         product?.name ?? '',
-    slug:         product?.slug ?? '',
-    description:  product?.description ?? '',
-    categoryId:   product?.category?.id?.toString() ?? '',
-    priceFrom:    product?.priceFrom?.toString() ?? '',
-    priceTo:      product?.priceTo?.toString() ?? '',
-    featherColor: product?.featherColor ?? '',
-    weightGrams:  product?.weightGrams?.toString() ?? '',
-    ageMonths:    product?.ageMonths?.toString() ?? '',
-    status:       product?.status ?? 'AVAILABLE',
+    name:               product?.name ?? '',
+    slug:               product?.slug ?? '',
+    productCode:        product?.productCode ?? '',
+    description:        product?.description ?? '',
+    categoryId:         product?.category?.id?.toString() ?? '',
+    priceFrom:          product?.priceFrom?.toString() ?? '',
+    priceTo:            product?.priceTo?.toString() ?? '',
+    featherColor:       product?.featherColor ?? '',
+    weightGrams:        product?.weightGrams?.toString() ?? '',
+    ageMonths:          product?.ageMonths?.toString() ?? '',
+    vaccinationStatus:  product?.vaccinationStatus ?? '',
+    characterTraits:    product?.characterTraits ?? '',
+    status:             product?.status ?? 'AVAILABLE',
   })
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -51,16 +54,19 @@ export function ProductForm({ product, categories }: Props) {
     setError(null)
     try {
       const body = {
-        name:         form.name,
-        slug:         form.slug || undefined,
-        description:  form.description || null,
-        categoryId:   Number(form.categoryId),
-        priceFrom:    form.priceFrom ? Number(form.priceFrom) : null,
-        priceTo:      form.priceTo   ? Number(form.priceTo)   : null,
-        featherColor: form.featherColor || null,
-        weightGrams:  form.weightGrams  ? Number(form.weightGrams)  : null,
-        ageMonths:    form.ageMonths    ? Number(form.ageMonths)    : null,
-        status:       form.status,
+        name:              form.name,
+        slug:              form.slug || undefined,
+        productCode:       form.productCode || null,
+        description:       form.description || null,
+        categoryId:        Number(form.categoryId),
+        priceFrom:         form.priceFrom ? Number(form.priceFrom) : null,
+        priceTo:           form.priceTo   ? Number(form.priceTo)   : null,
+        featherColor:      form.featherColor || null,
+        weightGrams:       form.weightGrams  ? Number(form.weightGrams)  : null,
+        ageMonths:         form.ageMonths    ? Number(form.ageMonths)    : null,
+        vaccinationStatus: form.vaccinationStatus || null,
+        characterTraits:   form.characterTraits   || null,
+        status:            form.status,
       }
 
       if (product) {
@@ -90,9 +96,13 @@ export function ProductForm({ product, categories }: Props) {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input label="Tên sản phẩm *" required value={form.name} onChange={set('name')} />
-        <Input label="Đường dẫn (slug)" value={form.slug}
-          placeholder="Tự động tạo từ tên nếu để trống" onChange={set('slug')} />
+        <Input label="Mã sản phẩm" value={form.productCode}
+          placeholder="Ví dụ: TC-012 — hiển thị để người mua tham chiếu trong chat"
+          onChange={set('productCode')} />
       </div>
+
+      <Input label="Đường dẫn (slug)" value={form.slug}
+        placeholder="Tự động tạo từ tên nếu để trống" onChange={set('slug')} />
 
       <Textarea label="Mô tả" value={form.description} onChange={set('description')} />
 
@@ -118,6 +128,27 @@ export function ProductForm({ product, categories }: Props) {
         <Input label="Màu lông"        value={form.featherColor} onChange={set('featherColor')} />
         <Input label="Nặng (gram)"     type="number" min={0} value={form.weightGrams} onChange={set('weightGrams')} />
         <Input label="Tuổi (tháng)"    type="number" min={0} value={form.ageMonths}   onChange={set('ageMonths')} />
+      </div>
+
+      {/* Trust signals */}
+      <div className="rounded-card border border-surface-border p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
+          Thông tin tin cậy (hiển thị công khai — tăng tỉ lệ liên hệ)
+        </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Input
+            label="Tình trạng tiêm phòng"
+            value={form.vaccinationStatus}
+            placeholder="Ví dụ: Đã tiêm đủ mũi"
+            onChange={set('vaccinationStatus')}
+          />
+          <Input
+            label="Tính cách / Đặc điểm"
+            value={form.characterTraits}
+            placeholder="Ví dụ: Hung hăng chiến, thích đánh"
+            onChange={set('characterTraits')}
+          />
+        </div>
       </div>
 
       {product ? (

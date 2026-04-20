@@ -6,6 +6,7 @@ package com.gatre.dto.response;
  */
 public record ProductSnapshotDTO(
         Long id,
+        String productCode,
         String name,
         String slug,
         String primaryMediaUrl

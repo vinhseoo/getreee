@@ -30,9 +30,10 @@ public class AdminProductController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminProductDTO>>> list(
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok(productService.findAllAdmin(pageable)));
+        return ResponseEntity.ok(ApiResponse.ok(productService.findAllAdmin(keyword, pageable)));
     }
 
     @GetMapping("/{id}")

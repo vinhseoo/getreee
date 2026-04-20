@@ -11,6 +11,8 @@ import com.gatre.entity.User;
 import com.gatre.entity.enums.Role;
 import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
+import com.gatre.mapper.ChatMapper;
+import com.gatre.mapper.ProductMapper;
 import com.gatre.repository.*;
 import com.gatre.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository          userRepository;
     private final ProductRepository       productRepository;
     private final ProductMediaRepository  productMediaRepository;
+    private final ChatMapper              chatMapper;
+    private final ProductMapper           productMapper;
 
     @Override
     @Transactional
@@ -87,7 +91,7 @@ public class ChatServiceImpl implements ChatService {
         conv.setLastMessageAt(Instant.now());
         conversationRepository.save(conv);
 
-        return toChatMessageDTO(saved, buildSnapshot(product));
+        return chatMapper.toMessageDTO(saved, buildSnapshot(product));
     }
 
     @Override
@@ -105,7 +109,7 @@ public class ChatServiceImpl implements ChatService {
 
         Page<ChatMessageDTO> page = chatMessageRepository
                 .findByConversationIdOrderByCreatedAtAsc(conversationId, pageable)
-                .map(m -> toChatMessageDTO(m, buildSnapshot(m.getProduct())));
+                .map(m -> chatMapper.toMessageDTO(m, buildSnapshot(m.getProduct())));
 
         return PageResponse.from(page);
     }
@@ -142,31 +146,11 @@ public class ChatServiceImpl implements ChatService {
                 .map(m -> m.getMediaUrl())
                 .findFirst()
                 .orElse(null);
-        return new ProductSnapshotDTO(
-                product.getId(), product.getName(), product.getSlug(), primaryUrl);
+        return productMapper.toSnapshotDTO(product, primaryUrl);
     }
 
     private ConversationDTO toConversationDTO(Conversation c) {
         long unread = chatMessageRepository.countByConversationIdAndReadFalse(c.getId());
-        return new ConversationDTO(
-                c.getId(),
-                c.getUser().getId(),
-                c.getUser().getName(),
-                c.getUser().getAvatarUrl(),
-                c.getLastMessageAt(),
-                unread);
-    }
-
-    private ChatMessageDTO toChatMessageDTO(ChatMessage m, ProductSnapshotDTO snapshot) {
-        return new ChatMessageDTO(
-                m.getId(),
-                m.getConversation().getId(),
-                m.getSender().getId(),
-                m.getSender().getName(),
-                m.getSender().getAvatarUrl(),
-                m.getContent(),
-                m.isRead(),
-                snapshot,
-                m.getCreatedAt());
+        return chatMapper.toConversationDTO(c, unread);
     }
 }

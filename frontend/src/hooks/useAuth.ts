@@ -10,7 +10,7 @@ export function useAuth() {
   const router = useRouter()
 
   /** Called by AuthInitializer on every page load — re-issues access token via cookie. */
-  async function refresh(): Promise<string | null> {
+  async function refresh(): Promise<{ token: string; expiresIn: number } | null> {
     try {
       const data = await apiFetch<{ accessToken: string; expiresIn: number }>(
         '/api/auth/refresh',
@@ -18,7 +18,7 @@ export function useAuth() {
       )
       const profile = await apiFetchAuth<UserProfile>('/api/auth/me', data.accessToken)
       setAuth(data.accessToken, profile)
-      return data.accessToken
+      return { token: data.accessToken, expiresIn: data.expiresIn }
     } catch {
       clearAuth()
       return null

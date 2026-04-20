@@ -6,6 +6,7 @@ import com.gatre.dto.response.UserProfileDTO;
 import com.gatre.entity.User;
 import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
+import com.gatre.mapper.UserMapper;
 import com.gatre.repository.UserRepository;
 import com.gatre.security.UserPrincipal;
 import com.gatre.service.UserService;
@@ -20,26 +21,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper     userMapper;
 
     @Override
     @Transactional(readOnly = true)
     public UserProfileDTO getCurrentUser(UserPrincipal principal) {
         User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        return new UserProfileDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getAvatarUrl(),
-                user.getRole()
-        );
+        return userMapper.toProfileDTO(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<AdminUserDTO> listUsers(Pageable pageable) {
         Page<User> page = userRepository.findAll(pageable);
-        return PageResponse.from(page.map(this::toAdminDTO));
+        return PageResponse.from(page.map(userMapper::toAdminDTO));
     }
 
     @Override
@@ -48,19 +44,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setActive(!user.isActive());
-        return toAdminDTO(userRepository.save(user));
-    }
-
-    private AdminUserDTO toAdminDTO(User user) {
-        return new AdminUserDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getAvatarUrl(),
-                user.getRole(),
-                user.getProvider(),
-                user.isActive(),
-                user.getCreatedAt()
-        );
+        return userMapper.toAdminDTO(userRepository.save(user));
     }
 }

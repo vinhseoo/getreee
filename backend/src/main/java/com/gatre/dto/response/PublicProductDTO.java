@@ -8,12 +8,15 @@ import java.util.List;
  */
 public record PublicProductDTO(
         Long id,
+        String productCode,
         String name,
         String slug,
         String description,
         String featherColor,
         Integer weightGrams,
         Integer ageMonths,
+        String vaccinationStatus,
+        String characterTraits,
         String status,
         PublicCategoryDTO category,
         String primaryMediaUrl,

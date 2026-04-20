@@ -34,6 +34,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
 
         {/* Attributes */}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-secondary">
+          {product.productCode  && <span className="font-mono text-text-muted">{product.productCode}</span>}
           {product.featherColor && <span>Lông: {product.featherColor}</span>}
           {product.weightGrams  && <span>{product.weightGrams}g</span>}
           {product.ageMonths    && <span>{product.ageMonths} tháng</span>}

@@ -53,6 +53,9 @@ public class Product {
     private BigDecimal priceTo;
     // ───────────────────────────────────────────────────────────────────────────
 
+    @Column(name = "product_code", unique = true)
+    private String productCode;
+
     @Column(name = "feather_color")
     private String featherColor;
 
@@ -61,6 +64,12 @@ public class Product {
 
     @Column(name = "age_months")
     private Integer ageMonths;
+
+    @Column(name = "vaccination_status")
+    private String vaccinationStatus;
+
+    @Column(name = "character_traits", columnDefinition = "TEXT")
+    private String characterTraits;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

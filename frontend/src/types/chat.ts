@@ -1,5 +1,6 @@
 export interface ProductSnapshot {
   id: number
+  productCode: string | null
   name: string
   slug: string
   primaryMediaUrl: string | null

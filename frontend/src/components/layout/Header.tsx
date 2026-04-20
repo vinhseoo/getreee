@@ -49,6 +49,13 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-4">
+          <Link
+            href="/danh-muc"
+            className="hidden text-sm text-text-secondary hover:text-primary transition-colors sm:block"
+          >
+            Danh mục
+          </Link>
+
           {user?.role === 'ADMIN' && (
             <Link
               href="/admin"
