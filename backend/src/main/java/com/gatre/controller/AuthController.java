@@ -17,6 +17,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +35,9 @@ public class AuthController {
     private final CustomUserDetailsService  userDetailsService;
     private final UserRepository            userRepository;
     private final PasswordEncoder           passwordEncoder;
+
+    @Value("${app.security.cookie-secure:true}")
+    private boolean cookieSecure;
 
     /**
      * Email + password login for LOCAL provider accounts.
@@ -70,7 +74,7 @@ public class AuthController {
 
         Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(false);   // TODO: true in production (HTTPS)
+        refreshCookie.setSecure(cookieSecure);
         refreshCookie.setPath("/api/auth/refresh");
         refreshCookie.setMaxAge((int) (jwtProvider.getRefreshTokenExpirationMs() / 1000));
         response.addCookie(refreshCookie);

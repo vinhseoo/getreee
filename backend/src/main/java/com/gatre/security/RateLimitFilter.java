@@ -11,22 +11,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Simple per-IP rate limiter on auth mutation endpoints.
- * Counters reset every 60 seconds. Limit: 10 requests/min/IP.
+ * Per-IP rate limiter on auth endpoints. Counters reset every 60 seconds.
+ * Login is kept tight (5/min) to slow brute-force; refresh is more lenient
+ * since page reloads can trigger it.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final int MAX_REQUESTS = 10;
-    private static final Set<String> RATE_LIMITED_PATHS = Set.of(
-            "/api/auth/login",
-            "/api/auth/refresh"
+    private static final Map<String, Integer> PATH_LIMITS = Map.of(
+            "/api/auth/login",   5,
+            "/api/auth/refresh", 20
     );
 
     private final ConcurrentHashMap<String, AtomicInteger> counters = new ConcurrentHashMap<>();
@@ -38,17 +38,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !RATE_LIMITED_PATHS.contains(request.getRequestURI());
+        return !PATH_LIMITS.containsKey(request.getRequestURI());
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        String ip = resolveClientIp(request);
-        int count = counters.computeIfAbsent(ip, k -> new AtomicInteger()).incrementAndGet();
+        String path  = request.getRequestURI();
+        int limit    = PATH_LIMITS.get(path);
+        String key   = path + "|" + resolveClientIp(request);
+        int count    = counters.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
 
-        if (count > MAX_REQUESTS) {
+        if (count > limit) {
             response.setStatus(429);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(
