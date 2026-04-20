@@ -11,6 +11,7 @@ const navItems = [
   { href: '/admin/danh-muc', label: 'Danh mục' },
   { href: '/admin/chat', label: 'Trò chuyện', badge: true },
   { href: '/admin/nguoi-dung', label: 'Người dùng' },
+  { href: '/admin/nhat-ky', label: 'Nhật ký' },
 ]
 
 interface AdminSidebarProps {

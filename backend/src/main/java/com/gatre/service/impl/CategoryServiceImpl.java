@@ -10,6 +10,7 @@ import com.gatre.exception.ErrorCode;
 import com.gatre.mapper.CategoryMapper;
 import com.gatre.repository.CategoryRepository;
 import com.gatre.repository.ProductRepository;
+import com.gatre.service.AuditLogService;
 import com.gatre.service.CategoryService;
 import com.gatre.util.SlugUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository  productRepository;
     private final CategoryMapper     categoryMapper;
+    private final AuditLogService    auditLogService;
 
     @Override
     @Transactional(readOnly = true)
@@ -54,6 +56,8 @@ public class CategoryServiceImpl implements CategoryService {
                 .slug(slug)
                 .description(request.description())
                 .build());
+        auditLogService.record("CATEGORY_CREATE", "CATEGORY", saved.getId(),
+                "Tạo danh mục: " + saved.getName());
         return categoryMapper.toAdminDTO(saved, 0);
     }
 
@@ -72,6 +76,8 @@ public class CategoryServiceImpl implements CategoryService {
         category.setSlug(slug);
         category.setDescription(request.description());
         Category saved = categoryRepository.save(category);
+        auditLogService.record("CATEGORY_UPDATE", "CATEGORY", saved.getId(),
+                "Cập nhật danh mục: " + saved.getName());
         return categoryMapper.toAdminDTO(saved, productRepository.countByCategoryId(saved.getId()));
     }
 
@@ -82,7 +88,9 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.hasProducts(id)) {
             throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
         }
+        String name = category.getName();
         categoryRepository.delete(category);
+        auditLogService.record("CATEGORY_DELETE", "CATEGORY", id, "Xóa danh mục: " + name);
     }
 
     private Category findOrThrow(Long id) {

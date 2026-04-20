@@ -21,6 +21,7 @@ import com.gatre.repository.ProductRepository;
 import com.gatre.repository.UserRepository;
 import com.gatre.repository.spec.ProductSpecification;
 import com.gatre.security.UserPrincipal;
+import com.gatre.service.AuditLogService;
 import com.gatre.service.CloudinaryService;
 import com.gatre.service.ProductService;
 import com.gatre.util.SlugUtils;
@@ -46,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
     private final UserRepository         userRepository;
     private final CloudinaryService      cloudinaryService;
     private final ProductMapper          productMapper;
+    private final AuditLogService        auditLogService;
 
     // ── Public ───────────────────────────────────────────────────────────────
 
@@ -133,6 +135,8 @@ public class ProductServiceImpl implements ProductService {
                 .status(req.status() != null ? req.status() : ProductStatus.AVAILABLE)
                 .build());
 
+        auditLogService.record("PRODUCT_CREATE", "PRODUCT", saved.getId(),
+                "Tạo sản phẩm: " + saved.getName());
         return productMapper.toAdminDetailDTO(saved, null, List.of());
     }
 
@@ -163,26 +167,35 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductMedia> media = productMediaRepository
                 .findByProductIdOrderByDisplayOrderAsc(id);
-        return toAdminDetailDTO(productRepository.save(product), media);
+        Product saved = productRepository.save(product);
+        auditLogService.record("PRODUCT_UPDATE", "PRODUCT", saved.getId(),
+                "Cập nhật sản phẩm: " + saved.getName());
+        return toAdminDetailDTO(saved, media);
     }
 
     @Override
     @Transactional
     public AdminProductDTO updateStatus(Long id, ProductStatus status) {
         Product product = findProductOrThrow(id);
+        ProductStatus prev = product.getStatus();
         product.setStatus(status);
         List<ProductMedia> media = productMediaRepository
                 .findByProductIdOrderByDisplayOrderAsc(id);
-        return toAdminDetailDTO(productRepository.save(product), media);
+        Product saved = productRepository.save(product);
+        auditLogService.record("PRODUCT_STATUS_CHANGE", "PRODUCT", saved.getId(),
+                "Đổi trạng thái: " + saved.getName() + " " + prev + " → " + status);
+        return toAdminDetailDTO(saved, media);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
         Product product = findProductOrThrow(id);
+        String name = product.getName();
         productMediaRepository.findByProductIdOrderByDisplayOrderAsc(id)
                 .forEach(m -> cloudinaryService.delete(m.getCloudinaryPublicId()));
         productRepository.delete(product);
+        auditLogService.record("PRODUCT_DELETE", "PRODUCT", id, "Xóa sản phẩm: " + name);
     }
 
     // ── Admin — Media ────────────────────────────────────────────────────────
