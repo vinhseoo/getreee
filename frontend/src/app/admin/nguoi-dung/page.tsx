@@ -6,13 +6,30 @@ import { useAdminUsers } from '@/hooks/useAdminUsers'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
+import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { toast } from '@/store/useToastStore'
+import { AdminUser, Role } from '@/types/user'
+
+type Mode = 'create' | 'edit' | 'reset-pw' | null
 
 export default function AdminUserPage() {
   const [page, setPage] = useState(0)
   const [keyword, setKeyword] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const { data, loading, error, toggleActive } = useAdminUsers(page, keyword)
+  const {
+    data, loading, error,
+    toggleActive, createUser, updateUser, resetPassword,
+  } = useAdminUsers(page, keyword)
+
+  const [mode, setMode] = useState<Mode>(null)
+  const [target, setTarget] = useState<AdminUser | null>(null)
+  const [form, setForm] = useState({
+    name: '', email: '', password: '', role: 'USER' as Role,
+  })
+  const [newPw, setNewPw] = useState('')
+  const [saving, setSaving] = useState(false)
 
   function handleSearch() {
     setPage(0)
@@ -34,16 +51,73 @@ export default function AdminUserPage() {
     }
   }
 
+  function openCreate() {
+    setTarget(null)
+    setForm({ name: '', email: '', password: '', role: 'USER' })
+    setMode('create')
+  }
+
+  function openEdit(u: AdminUser) {
+    setTarget(u)
+    setForm({ name: u.name, email: u.email, password: '', role: u.role })
+    setMode('edit')
+  }
+
+  function openResetPw(u: AdminUser) {
+    setTarget(u)
+    setNewPw('')
+    setMode('reset-pw')
+  }
+
+  function closeModal() {
+    setMode(null)
+    setTarget(null)
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      if (mode === 'create') {
+        if (!form.name.trim() || !form.email.trim() || form.password.length < 6) {
+          toast.error('Vui lòng điền đầy đủ và mật khẩu tối thiểu 6 ký tự.')
+          return
+        }
+        await createUser({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          password: form.password,
+          role: form.role,
+        })
+        toast.success('Đã tạo tài khoản.')
+      } else if (mode === 'edit' && target) {
+        await updateUser(target.id, { name: form.name.trim(), role: form.role })
+        toast.success('Đã cập nhật tài khoản.')
+      } else if (mode === 'reset-pw' && target) {
+        if (newPw.length < 6) {
+          toast.error('Mật khẩu mới tối thiểu 6 ký tự.')
+          return
+        }
+        await resetPassword(target.id, newPw)
+        toast.success('Đã đặt lại mật khẩu.')
+      }
+      closeModal()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Thao tác thất bại.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-text-primary">Người dùng</h1>
-        {data && (
-          <span className="text-sm text-text-muted">{data.totalElements} tài khoản</span>
-        )}
+        <div className="flex items-center gap-3">
+          {data && <span className="text-sm text-text-muted">{data.totalElements} tài khoản</span>}
+          <Button onClick={openCreate}>+ Thêm tài khoản</Button>
+        </div>
       </div>
 
-      {/* D1: Search */}
       <div className="flex gap-2">
         <input
           ref={inputRef}
@@ -119,7 +193,15 @@ export default function AdminUserPage() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(user)}>
+                          Sửa
+                        </Button>
+                        {user.provider === 'LOCAL' && (
+                          <Button variant="ghost" size="sm" onClick={() => openResetPw(user)}>
+                            Đổi MK
+                          </Button>
+                        )}
                         <Button
                           variant={user.active ? 'danger' : 'ghost'}
                           size="sm"
@@ -169,6 +251,69 @@ export default function AdminUserPage() {
           )}
         </>
       )}
+
+      <Modal
+        open={mode === 'create' || mode === 'edit'}
+        onClose={closeModal}
+        title={mode === 'create' ? 'Tạo tài khoản mới' : 'Chỉnh sửa tài khoản'}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Họ và tên *"
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          />
+          <Input
+            label="Email *"
+            type="email"
+            value={form.email}
+            disabled={mode === 'edit'}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          />
+          {mode === 'create' && (
+            <Input
+              label="Mật khẩu * (≥ 6 ký tự)"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+            />
+          )}
+          <Select
+            label="Vai trò *"
+            value={form.role}
+            onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
+            options={[
+              { value: 'USER', label: 'Người dùng' },
+              { value: 'ADMIN', label: 'Admin' },
+            ]}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="ghost" type="button" onClick={closeModal}>Huỷ</Button>
+            <Button loading={saving} onClick={handleSave}>
+              {mode === 'create' ? 'Tạo mới' : 'Cập nhật'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={mode === 'reset-pw'}
+        onClose={closeModal}
+        title={target ? `Đặt lại mật khẩu — ${target.name}` : 'Đặt lại mật khẩu'}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Mật khẩu mới * (≥ 6 ký tự)"
+            type="password"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="ghost" type="button" onClick={closeModal}>Huỷ</Button>
+            <Button loading={saving} onClick={handleSave}>Đặt lại</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

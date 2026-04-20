@@ -43,5 +43,37 @@ export function useAdminUsers(page = 0, keyword = '') {
     await load()
   }
 
-  return { data, loading, error, toggleActive, refresh: load }
+  async function createUser(body: {
+    name: string
+    email: string
+    password: string
+    role: 'USER' | 'ADMIN'
+  }) {
+    if (!accessToken) return
+    await apiFetchAuth('/api/admin/users', accessToken, {
+      method: 'POST', body: JSON.stringify(body),
+    })
+    await load()
+  }
+
+  async function updateUser(id: number, body: {
+    name?: string
+    role?: 'USER' | 'ADMIN'
+    active?: boolean
+  }) {
+    if (!accessToken) return
+    await apiFetchAuth(`/api/admin/users/${id}`, accessToken, {
+      method: 'PUT', body: JSON.stringify(body),
+    })
+    await load()
+  }
+
+  async function resetPassword(id: number, newPassword: string) {
+    if (!accessToken) return
+    await apiFetchAuth(`/api/admin/users/${id}/reset-password`, accessToken, {
+      method: 'POST', body: JSON.stringify({ newPassword }),
+    })
+  }
+
+  return { data, loading, error, toggleActive, createUser, updateUser, resetPassword, refresh: load }
 }
