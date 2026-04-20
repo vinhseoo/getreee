@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Button } from '@/components/ui/Button'
+import { FavoriteButton } from './FavoriteButton'
 
 interface Props {
   productId: number
@@ -34,9 +35,12 @@ export function ProductCTA({ productId, productCode, productName, slug }: Props)
       <p className="mt-1 text-xs text-text-muted">
         Giá không được hiển thị công khai. Vui lòng liên hệ để thương lượng trực tiếp.
       </p>
-      <Button onClick={handleClick} className="mt-3 w-full">
-        Liên hệ thương lượng giá →
-      </Button>
+      <div className="mt-3 flex items-stretch gap-2">
+        <Button onClick={handleClick} className="flex-1">
+          Liên hệ thương lượng giá →
+        </Button>
+        <FavoriteButton productId={productId} productSlug={slug} />
+      </div>
     </div>
   )
 }

@@ -123,6 +123,13 @@ export function Header() {
                         Hồ sơ cá nhân
                       </Link>
                       <Link
+                        href="/dashboard/yeu-thich"
+                        onClick={() => setDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-text-secondary hover:bg-surface-muted hover:text-text-primary"
+                      >
+                        Yêu thích
+                      </Link>
+                      <Link
                         href="/dashboard/chat"
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center justify-between px-4 py-2 text-sm text-text-secondary hover:bg-surface-muted hover:text-text-primary"
