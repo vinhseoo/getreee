@@ -76,6 +76,9 @@ public class Product {
     @Column(name = "status", columnDefinition = "product_status", nullable = false)
     private ProductStatus status;
 
+    @Column(name = "view_count", nullable = false)
+    private long viewCount;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

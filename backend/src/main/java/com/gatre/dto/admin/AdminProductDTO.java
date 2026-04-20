@@ -27,6 +27,7 @@ public record AdminProductDTO(
         PublicCategoryDTO category,
         String primaryMediaUrl,
         List<AdminProductMediaDTO> media,
+        long viewCount,
         Instant createdAt,
         Instant updatedAt
 ) {}

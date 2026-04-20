@@ -71,11 +71,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PublicProductDTO findBySlugPublic(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .filter(p -> p.getStatus() == ProductStatus.AVAILABLE)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        productRepository.incrementViewCount(product.getId());
+        product.setViewCount(product.getViewCount() + 1);
 
         List<ProductMedia> media = productMediaRepository
                 .findByProductIdOrderByDisplayOrderAsc(product.getId());

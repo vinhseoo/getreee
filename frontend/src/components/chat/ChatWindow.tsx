@@ -25,7 +25,7 @@ interface Props {
 
 export function ChatWindow({ conversationId, initialProductId, initialProductCode, initialProductName }: Props) {
   const { user, accessToken } = useAuthStore()
-  const { messages, connected, setMessages, appendMessage, setConnected } = useChatStore()
+  const { messages, connected, setMessages, appendMessage, setConnected, clearUnread } = useChatStore()
 
   // Auto-fill inquiry template when arriving from a product page
   const autoFillTemplate =
@@ -45,7 +45,7 @@ export function ChatWindow({ conversationId, initialProductId, initialProductCod
   const bottomRef = useRef<HTMLDivElement>(null)
   const clientRef = useRef<Client | null>(null)
 
-  // Load message history
+  // Load message history and mark as read
   useEffect(() => {
     if (!accessToken) return
     setLoading(true)
@@ -53,10 +53,17 @@ export function ChatWindow({ conversationId, initialProductId, initialProductCod
       `/api/user/chat/conversation/${conversationId}/messages?size=50`,
       accessToken
     )
-      .then((data) => setMessages(data.content))
+      .then((data) => {
+        setMessages(data.content)
+        apiFetchAuth<void>(
+          `/api/user/chat/conversation/${conversationId}/read`,
+          accessToken,
+          { method: 'PATCH' }
+        ).then(() => clearUnread()).catch(() => {})
+      })
       .catch(() => toast.error('Không thể tải lịch sử tin nhắn. Vui lòng thử lại.'))
       .finally(() => setLoading(false))
-  }, [conversationId, accessToken, setMessages])
+  }, [conversationId, accessToken, setMessages, clearUnread])
 
   // Connect WebSocket
   useEffect(() => {

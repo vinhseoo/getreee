@@ -20,5 +20,6 @@ public record PublicProductDTO(
         String status,
         PublicCategoryDTO category,
         String primaryMediaUrl,
-        List<ProductMediaDTO> media
+        List<ProductMediaDTO> media,
+        long viewCount
 ) {}

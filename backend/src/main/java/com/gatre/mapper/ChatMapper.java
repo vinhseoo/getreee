@@ -26,9 +26,9 @@ public interface ChatMapper {
         );
     }
 
-    @Mapping(target = "userId",       source = "user.id")
-    @Mapping(target = "userName",     source = "user.name")
-    @Mapping(target = "userAvatarUrl",source = "user.avatarUrl")
+    @Mapping(target = "userId",       source = "conversation.user.id")
+    @Mapping(target = "userName",     source = "conversation.user.name")
+    @Mapping(target = "userAvatarUrl",source = "conversation.user.avatarUrl")
     @Mapping(target = "lastMessage",  ignore = true)
     ConversationDTO toConversationDTOBase(Conversation conversation, long unreadCount);
 

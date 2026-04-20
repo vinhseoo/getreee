@@ -6,6 +6,7 @@ interface ChatState {
   messages: ChatMessage[]
   connected: boolean
   setConversation: (c: Conversation) => void
+  clearUnread: () => void
   setMessages: (msgs: ChatMessage[]) => void
   appendMessage: (msg: ChatMessage) => void
   setConnected: (v: boolean) => void
@@ -17,6 +18,10 @@ export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   connected: false,
   setConversation: (conversation) => set({ conversation }),
+  clearUnread: () =>
+    set((s) =>
+      s.conversation ? { conversation: { ...s.conversation, unreadCount: 0 } } : {}
+    ),
   setMessages: (messages) => set({ messages }),
   appendMessage: (msg) =>
     set((s) => ({

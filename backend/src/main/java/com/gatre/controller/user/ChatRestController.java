@@ -58,4 +58,12 @@ public class ChatRestController {
         return ResponseEntity.ok(
                 ApiResponse.ok(chatService.getMessages(id, principal.getId(), pageable)));
     }
+
+    @PatchMapping("/conversation/{id}/read")
+    public ResponseEntity<ApiResponse<Void>> markRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        chatService.markConversationRead(id);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }

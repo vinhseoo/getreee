@@ -48,6 +48,7 @@ export interface PublicProduct {
   category: PublicCategory
   primaryMediaUrl: string | null
   media: ProductMedia[] | null
+  viewCount: number
 }
 
 /**
@@ -71,6 +72,7 @@ export interface AdminProduct {
   category: PublicCategory
   primaryMediaUrl: string | null
   media: AdminProductMedia[] | null
+  viewCount: number
   createdAt: string
   updatedAt: string
 }

@@ -74,7 +74,10 @@ export default async function ProductDetailPage({ params }: Props) {
             <p className="text-sm font-medium text-primary">{product.category.name}</p>
           )}
 
-          <h1 className="text-2xl font-bold text-text-primary">{product.name}</h1>
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-2xl font-bold text-text-primary">{product.name}</h1>
+            <span className="shrink-0 text-xs text-text-muted mt-1">{product.viewCount.toLocaleString('vi-VN')} lượt xem</span>
+          </div>
 
           {/* Identification */}
           {product.productCode && (

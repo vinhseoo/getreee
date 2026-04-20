@@ -112,6 +112,7 @@ export function AdminProductTable({ products, onDelete, onStatusChange }: Props)
               <th className="px-4 py-3 text-left font-medium text-text-secondary">Sản phẩm</th>
               <th className="px-4 py-3 text-left font-medium text-text-secondary">Danh mục</th>
               <th className="px-4 py-3 text-left font-medium text-text-secondary">Giá tham khảo</th>
+              <th className="px-4 py-3 text-right font-medium text-text-secondary">Lượt xem</th>
               <th className="px-4 py-3 text-left font-medium text-text-secondary">Trạng thái</th>
               <th className="px-4 py-3 text-right font-medium text-text-secondary">Thao tác</th>
             </tr>
@@ -119,7 +120,7 @@ export function AdminProductTable({ products, onDelete, onStatusChange }: Props)
           <tbody>
             {products.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-text-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-text-muted">
                   Không có sản phẩm nào.
                 </td>
               </tr>
@@ -165,6 +166,10 @@ export function AdminProductTable({ products, onDelete, onStatusChange }: Props)
                     ? `${p.priceFrom.toLocaleString('vi-VN')}đ – ${p.priceTo?.toLocaleString('vi-VN')}đ`
                     : <span className="italic text-text-muted">Chưa đặt</span>
                   }
+                </td>
+
+                <td className="px-4 py-3 text-right text-text-muted">
+                  {p.viewCount.toLocaleString('vi-VN')}
                 </td>
 
                 {/* A1: Inline status select */}
