@@ -1,4 +1,5 @@
 export type Role = 'USER' | 'ADMIN'
+export type AuthProvider = 'GOOGLE' | 'LOCAL'
 
 export interface UserProfile {
   id: number
@@ -6,6 +7,7 @@ export interface UserProfile {
   email: string
   avatarUrl: string | null
   role: Role
+  provider: AuthProvider
 }
 
 export interface AdminUser {
@@ -14,7 +16,7 @@ export interface AdminUser {
   email: string
   avatarUrl: string | null
   role: Role
-  provider: 'GOOGLE' | 'LOCAL'
+  provider: AuthProvider
   active: boolean
   createdAt: string
 }

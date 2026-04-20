@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useFavoritesStore } from '@/store/useFavoritesStore'
 import { apiFetch, apiFetchAuth } from '@/lib/apiClient'
 import { UserProfile } from '@/types/user'
 
@@ -28,6 +29,7 @@ export function useAuth() {
   async function logout() {
     try { await apiFetch('/api/auth/logout', { method: 'POST' }) } catch { /* silent */ }
     clearAuth()
+    useFavoritesStore.getState().clear()
     router.push('/dang-nhap')
   }
 

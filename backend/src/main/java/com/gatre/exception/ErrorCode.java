@@ -20,6 +20,10 @@ public enum ErrorCode {
     USER_INACTIVE(HttpStatus.FORBIDDEN,           "Tài khoản của bạn đã bị vô hiệu hóa."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED,  "Email hoặc mật khẩu không chính xác."),
     LOGIN_NOT_SUPPORTED(HttpStatus.BAD_REQUEST,   "Tài khoản này đăng nhập qua Google. Vui lòng dùng nút 'Đăng nhập với Google'."),
+    PASSWORD_CHANGE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "Tài khoản đăng nhập qua Google không thể đổi mật khẩu tại đây."),
+    PASSWORD_TOO_SHORT(HttpStatus.BAD_REQUEST,    "Mật khẩu mới phải có ít nhất 6 ký tự."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT,     "Email này đã được sử dụng."),
+    INVALID_INPUT(HttpStatus.BAD_REQUEST,         "Dữ liệu đầu vào không hợp lệ."),
 
     // Category
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND,      "Không tìm thấy danh mục."),

@@ -1,5 +1,6 @@
 package com.gatre.dto.response;
 
+import com.gatre.entity.enums.AuthProvider;
 import com.gatre.entity.enums.Role;
 
 public record UserProfileDTO(
@@ -7,5 +8,6 @@ public record UserProfileDTO(
         String name,
         String email,
         String avatarUrl,
-        Role role
+        Role role,
+        AuthProvider provider
 ) {}
