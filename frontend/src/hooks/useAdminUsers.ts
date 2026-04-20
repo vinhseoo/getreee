@@ -6,7 +6,7 @@ import { apiFetchAuth } from '@/lib/apiClient'
 import { AdminUser } from '@/types/user'
 import { PageResponse } from '@/types/api'
 
-export function useAdminUsers(page = 0) {
+export function useAdminUsers(page = 0, keyword = '') {
   const { accessToken } = useAuthStore()
   const [data, setData] = useState<PageResponse<AdminUser> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -17,8 +17,14 @@ export function useAdminUsers(page = 0) {
     setLoading(true)
     setError(null)
     try {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: '20',
+        sort: 'createdAt,desc',
+      })
+      if (keyword.trim()) params.set('keyword', keyword.trim())
       const res = await apiFetchAuth<PageResponse<AdminUser>>(
-        `/api/admin/users?page=${page}&size=20&sort=createdAt,desc`,
+        `/api/admin/users?${params.toString()}`,
         accessToken
       )
       setData(res)
@@ -27,7 +33,7 @@ export function useAdminUsers(page = 0) {
     } finally {
       setLoading(false)
     }
-  }, [accessToken, page])
+  }, [accessToken, page, keyword])
 
   useEffect(() => { load() }, [load])
 

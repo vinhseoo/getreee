@@ -13,4 +13,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>,
     Optional<Product> findBySlug(String slug);
     boolean existsBySlug(String slug);
     long countByStatus(ProductStatus status);
+    long countByCategoryId(Long categoryId);
 }

@@ -111,6 +111,7 @@ export default function AdminCategoryPage() {
                 <th className="px-4 py-3 text-left font-medium text-text-secondary">Tên</th>
                 <th className="px-4 py-3 text-left font-medium text-text-secondary">Đường dẫn</th>
                 <th className="px-4 py-3 text-left font-medium text-text-secondary">Mô tả</th>
+                <th className="px-4 py-3 text-center font-medium text-text-secondary">Sản phẩm</th>
                 <th className="px-4 py-3 text-right font-medium text-text-secondary">Thao tác</th>
               </tr>
             </thead>
@@ -118,19 +119,32 @@ export default function AdminCategoryPage() {
               {categories.map(cat => (
                 <tr key={cat.id} className="border-b border-surface-border last:border-0 hover:bg-surface-muted/50">
                   <td className="px-4 py-3 font-medium text-text-primary">{cat.name}</td>
-                  <td className="px-4 py-3 text-text-muted">{cat.slug}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-text-muted">{cat.slug}</td>
                   <td className="px-4 py-3 text-text-secondary">{cat.description ?? '—'}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      cat.productCount > 0
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-surface-muted text-text-muted'
+                    }`}>
+                      {cat.productCount}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => openEdit(cat)}>Sửa</Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDelete(cat.id)}>Xóa</Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(cat.id)}
+                        title={cat.productCount > 0 ? `Có ${cat.productCount} sản phẩm — xóa sẽ thất bại` : undefined}
+                      >
+                        Xóa
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
               {categories.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-text-muted">
+                  <td colSpan={5} className="px-4 py-8 text-center text-text-muted">
                     Chưa có danh mục nào.
                   </td>
                 </tr>

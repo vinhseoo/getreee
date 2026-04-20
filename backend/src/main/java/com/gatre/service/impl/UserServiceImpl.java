@@ -33,8 +33,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<AdminUserDTO> listUsers(Pageable pageable) {
-        Page<User> page = userRepository.findAll(pageable);
+    public PageResponse<AdminUserDTO> listUsers(String keyword, Pageable pageable) {
+        Page<User> page = (keyword != null && !keyword.isBlank())
+                ? userRepository.searchByKeyword(keyword.trim(), pageable)
+                : userRepository.findAll(pageable);
         return PageResponse.from(page.map(userMapper::toAdminDTO));
     }
 

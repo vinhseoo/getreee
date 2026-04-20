@@ -20,9 +20,10 @@ public class AdminUserController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminUserDTO>>> listUsers(
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok(userService.listUsers(pageable)));
+        return ResponseEntity.ok(ApiResponse.ok(userService.listUsers(keyword, pageable)));
     }
 
     @PatchMapping("/{id}/toggle-active")

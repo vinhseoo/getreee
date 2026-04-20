@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { useAdminUsers } from '@/hooks/useAdminUsers'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +10,20 @@ import { toast } from '@/store/useToastStore'
 
 export default function AdminUserPage() {
   const [page, setPage] = useState(0)
-  const { data, loading, error, toggleActive } = useAdminUsers(page)
+  const [keyword, setKeyword] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const { data, loading, error, toggleActive } = useAdminUsers(page, keyword)
+
+  function handleSearch() {
+    setPage(0)
+    setKeyword(inputRef.current?.value.trim() ?? '')
+  }
+
+  function handleClear() {
+    if (inputRef.current) inputRef.current.value = ''
+    setPage(0)
+    setKeyword('')
+  }
 
   async function handleToggle(id: number, currentlyActive: boolean) {
     try {
@@ -27,6 +40,21 @@ export default function AdminUserPage() {
         <h1 className="text-xl font-semibold text-text-primary">Người dùng</h1>
         {data && (
           <span className="text-sm text-text-muted">{data.totalElements} tài khoản</span>
+        )}
+      </div>
+
+      {/* D1: Search */}
+      <div className="flex gap-2">
+        <input
+          ref={inputRef}
+          defaultValue={keyword}
+          placeholder="Tìm theo tên hoặc email..."
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className="w-72 rounded-btn border border-surface-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary"
+        />
+        <Button size="sm" onClick={handleSearch}>Tìm</Button>
+        {keyword && (
+          <Button variant="ghost" size="sm" onClick={handleClear}>Xoá</Button>
         )}
       </div>
 

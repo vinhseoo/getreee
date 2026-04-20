@@ -14,6 +14,7 @@ export interface AdminCategory {
   description: string | null
   createdAt: string
   updatedAt: string
+  productCount: number
 }
 
 export interface ProductMedia {

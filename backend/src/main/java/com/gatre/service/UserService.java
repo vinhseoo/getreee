@@ -8,6 +8,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     UserProfileDTO getCurrentUser(UserPrincipal principal);
-    PageResponse<AdminUserDTO> listUsers(Pageable pageable);
+    PageResponse<AdminUserDTO> listUsers(String keyword, Pageable pageable);
     AdminUserDTO toggleActive(Long userId);
 }

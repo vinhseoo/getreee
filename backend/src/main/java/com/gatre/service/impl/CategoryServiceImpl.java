@@ -9,6 +9,7 @@ import com.gatre.exception.AppException;
 import com.gatre.exception.ErrorCode;
 import com.gatre.mapper.CategoryMapper;
 import com.gatre.repository.CategoryRepository;
+import com.gatre.repository.ProductRepository;
 import com.gatre.service.CategoryService;
 import com.gatre.util.SlugUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryMapper      categoryMapper;
+    private final ProductRepository  productRepository;
+    private final CategoryMapper     categoryMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -36,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public List<AdminCategoryDTO> findAllAdmin() {
         return categoryRepository.findAll().stream()
-                .map(categoryMapper::toAdminDTO)
+                .map(cat -> categoryMapper.toAdminDTO(cat, productRepository.countByCategoryId(cat.getId())))
                 .toList();
     }
 
@@ -52,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .slug(slug)
                 .description(request.description())
                 .build());
-        return categoryMapper.toAdminDTO(saved);
+        return categoryMapper.toAdminDTO(saved, 0);
     }
 
     @Override
@@ -69,7 +71,8 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(request.name());
         category.setSlug(slug);
         category.setDescription(request.description());
-        return categoryMapper.toAdminDTO(categoryRepository.save(category));
+        Category saved = categoryRepository.save(category);
+        return categoryMapper.toAdminDTO(saved, productRepository.countByCategoryId(saved.getId()));
     }
 
     @Override

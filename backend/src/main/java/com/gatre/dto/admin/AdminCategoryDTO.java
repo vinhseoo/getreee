@@ -8,5 +8,6 @@ public record AdminCategoryDTO(
         String slug,
         String description,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        long productCount
 ) {}
