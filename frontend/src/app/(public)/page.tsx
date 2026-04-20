@@ -22,8 +22,9 @@ async function fetchCategories(): Promise<PublicCategory[]> {
 
 async function fetchProducts(searchParams: Record<string, string>): Promise<PageResponse<PublicProduct>> {
   const params = new URLSearchParams()
-  if (searchParams.categoryId) params.set('categoryId', searchParams.categoryId)
+  if (searchParams.categoryId)   params.set('categoryId', searchParams.categoryId)
   if (searchParams.featherColor) params.set('featherColor', searchParams.featherColor)
+  if (searchParams.keyword)      params.set('keyword', searchParams.keyword)
   params.set('page', searchParams.page ?? '0')
   params.set('size', '12')
   params.set('sort', 'createdAt,desc')

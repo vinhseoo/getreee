@@ -20,11 +20,19 @@ frontend/.env*.local
 frontend/tsconfig.tsbuildinfo
 
 # ──────────────────────────────────────────────
+# Scripts
+# ──────────────────────────────────────────────
+scripts/node_modules/
+scripts/seed-results.json
+
+# ──────────────────────────────────────────────
 # OS / Editor
 # ──────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
+*~
 .vscode/
 .idea/
+frontend/tsconfig.tsbuildinfo

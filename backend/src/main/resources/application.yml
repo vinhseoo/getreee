@@ -3,9 +3,9 @@ spring:
     name: gatre-backend
 
   datasource:
-    url: jdbc:postgresql://ep-rapid-mode-a1xpf3g5-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_9ZjlMK2UiYhg
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=gatre
+    username: postgres
+    password: 12345678
     driver-class-name: org.postgresql.Driver
 
   jpa:

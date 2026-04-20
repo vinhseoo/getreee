@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import Link from 'next/link'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useChatStore } from '@/store/useChatStore'
 import { apiFetchAuth } from '@/lib/apiClient'
@@ -13,19 +14,24 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'http://localhost:8080/ws'
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Props {
   conversationId: number
+  initialProductId?: number | null
+  initialProductName?: string | null
 }
 
-export function ChatWindow({ conversationId }: Props) {
+export function ChatWindow({ conversationId, initialProductId, initialProductName }: Props) {
   const { user, accessToken } = useAuthStore()
   const { messages, connected, setMessages, appendMessage, setConnected } = useChatStore()
 
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  // Product attached to the next message (from product detail page navigation)
+  const [attachedProductId, setAttachedProductId] = useState<number | null>(initialProductId ?? null)
+  const [attachedProductName] = useState<string | null>(initialProductName ?? null)
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const clientRef = useRef<Client | null>(null)
 
@@ -84,9 +90,14 @@ export function ChatWindow({ conversationId }: Props) {
     setSending(true)
     clientRef.current.publish({
       destination: '/app/chat.send',
-      body: JSON.stringify({ conversationId, content: text, productId: null }),
+      body: JSON.stringify({
+        conversationId,
+        content: text,
+        productId: attachedProductId ?? null,
+      }),
     })
     setInput('')
+    setAttachedProductId(null)
     setSending(false)
   }
 
@@ -120,6 +131,25 @@ export function ChatWindow({ conversationId }: Props) {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {/* Attached product indicator */}
+      {attachedProductId && (
+        <div className="flex items-center gap-2 border-t border-surface-border bg-primary/5 px-4 py-2 text-xs text-primary">
+          <span className="font-medium">Sản phẩm đính kèm:</span>
+          <Link
+            href={`/san-pham/${attachedProductId}`}
+            className="underline hover:text-primary-dark"
+          >
+            {attachedProductName ?? `#${attachedProductId}`}
+          </Link>
+          <button
+            onClick={() => setAttachedProductId(null)}
+            className="ml-auto text-text-muted hover:text-danger"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <div className="border-t border-surface-border p-3">

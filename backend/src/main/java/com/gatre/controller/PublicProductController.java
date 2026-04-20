@@ -32,10 +32,11 @@ public class PublicProductController {
     public ResponseEntity<ApiResponse<PageResponse<PublicProductDTO>>> products(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String featherColor,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
         return ResponseEntity.ok(
-                ApiResponse.ok(productService.findPublicProducts(categoryId, featherColor, pageable)));
+                ApiResponse.ok(productService.findPublicProducts(categoryId, featherColor, keyword, pageable)));
     }
 
     @GetMapping("/products/{slug}")

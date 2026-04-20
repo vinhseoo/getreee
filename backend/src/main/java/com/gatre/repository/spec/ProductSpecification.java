@@ -23,4 +23,10 @@ public final class ProductSpecification {
                 featherColor == null ? null :
                 cb.equal(cb.lower(root.get("featherColor")), featherColor.toLowerCase());
     }
+
+    public static Specification<Product> hasKeyword(String keyword) {
+        return (root, query, cb) ->
+                keyword == null || keyword.isBlank() ? null :
+                cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase().trim() + "%");
+    }
 }

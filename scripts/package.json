@@ -1,0 +1,12 @@
+{
+  "name": "gatre-seed-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "seed": "node cloudinary-seed.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1"
+  }
+}
